@@ -4,17 +4,17 @@ from ape import accounts, project
 
 @pytest.fixture
 def deployer():
-    return accounts[0]
+    return accounts.test_accounts[0]
 
 
 @pytest.fixture
 def requester():
-    return accounts[1]
+    return accounts.test_accounts[1]
 
 
 @pytest.fixture
 def other_user():
-    return accounts[2]
+    return accounts.test_accounts[2]
 
 
 @pytest.fixture
@@ -85,7 +85,7 @@ class TestMinterRequest:
         assert request.ipfs_id_front == sample_kyc_data["ipfs_id_front"]
         assert request.ipfs_id_back == sample_kyc_data["ipfs_id_back"]
         assert request.ipfs_selfie == sample_kyc_data["ipfs_selfie"]
-        assert request.status == 0  # PENDING
+        assert request.status == 1  # PENDING
         assert request.processed_by == "0x0000000000000000000000000000000000000000"
 
         # Check event
@@ -218,7 +218,7 @@ class TestApproveRequest:
 
         # Check request status
         request = minter_registry.get_request(1)
-        assert request.status == 1  # APPROVED
+        assert request.status == 2  # APPROVED
         assert request.processed_by == deployer.address
         assert request.processed_at > 0
 
@@ -315,7 +315,7 @@ class TestRejectRequest:
 
         # Check request status
         request = minter_registry.get_request(1)
-        assert request.status == 2  # REJECTED
+        assert request.status == 4  # REJECTED
         assert request.processed_by == deployer.address
         assert request.rejection_reason == rejection_reason
 
@@ -415,7 +415,7 @@ class TestRevokeMinter:
 
         # Check status
         request = minter_registry.get_request(1)
-        assert request.status == 3  # REVOKED
+        assert request.status == 8  # REVOKED
         assert minter_registry.approved_minters(requester.address) == False
 
         # Check event

@@ -5,6 +5,8 @@
 # Python
 .env
 .venv
+.venv311
+.venv312
 .pytest_cache
 .python-version
 __pycache__
@@ -128,7 +130,6 @@ dist/
 
 # Gatsby files
 .cache/
-public/
 
 # Storybook build outputs
 .out/
@@ -137,3 +138,6 @@ public/
 # Temporary folders
 tmp/
 temp/
+
+backend/node_modules
+node_modules

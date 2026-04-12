@@ -4,17 +4,17 @@ from ape import accounts, project
 
 @pytest.fixture
 def deployer():
-    return accounts[0]
+    return accounts.test_accounts[0]
 
 
 @pytest.fixture
 def user():
-    return accounts[1]
+    return accounts.test_accounts[1]
 
 
 @pytest.fixture
 def other_user():
-    return accounts[2]
+    return accounts.test_accounts[2]
 
 
 @pytest.fixture

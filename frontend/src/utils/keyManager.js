@@ -5,33 +5,45 @@
  * All encryption/decryption will use this key automatically
  */
 
-import { ethers } from 'ethers'
+import { ethers } from "ethers";
 
 // Get key from environment variable
-const ENV_KEY = import.meta.env.VITE_ENCRYPTION_KEY
+const DEFAULT_DEV_ENCRYPTION_KEY =
+  "0x59c6995e998f97a5a004497e5d7d8f2b2c1d4c1b3f3c9b1a6b1d2c3d4e5f6789";
+const ENV_KEY =
+  import.meta.env.VITE_ENCRYPTION_KEY || DEFAULT_DEV_ENCRYPTION_KEY;
 
 // Cached wallet instance
-let cachedWallet = null
+let cachedWallet = null;
 
 /**
  * Initialize wallet from environment key
  */
 function initWallet() {
-  if (cachedWallet) return cachedWallet
+  if (cachedWallet) return cachedWallet;
 
   if (!ENV_KEY) {
-    console.error('❌ VITE_ENCRYPTION_KEY not set in .env file')
-    return null
+    console.error("❌ VITE_ENCRYPTION_KEY not set in .env file");
+    return null;
   }
 
   try {
-    const normalizedKey = ENV_KEY.startsWith('0x') ? ENV_KEY : '0x' + ENV_KEY
-    cachedWallet = new ethers.Wallet(normalizedKey)
-    console.log('🔐 Global encryption key loaded for address:', cachedWallet.address)
-    return cachedWallet
+    const normalizedKey = ENV_KEY.startsWith("0x") ? ENV_KEY : "0x" + ENV_KEY;
+    cachedWallet = new ethers.Wallet(normalizedKey);
+    if (import.meta.env.VITE_ENCRYPTION_KEY) {
+      console.log(
+        "🔐 Global encryption key loaded for address:",
+        cachedWallet.address,
+      );
+    } else {
+      console.warn(
+        "⚠️ VITE_ENCRYPTION_KEY missing, using built-in local dev encryption key",
+      );
+    }
+    return cachedWallet;
   } catch (error) {
-    console.error('❌ Invalid VITE_ENCRYPTION_KEY:', error.message)
-    return null
+    console.error("❌ Invalid VITE_ENCRYPTION_KEY:", error.message);
+    return null;
   }
 }
 
@@ -40,8 +52,8 @@ function initWallet() {
  * @returns {string|null}
  */
 export function getPrivateKey() {
-  const wallet = initWallet()
-  return wallet?.privateKey || null
+  const wallet = initWallet();
+  return wallet?.privateKey || null;
 }
 
 /**
@@ -49,8 +61,8 @@ export function getPrivateKey() {
  * @returns {string|null}
  */
 export function getPublicKey() {
-  const wallet = initWallet()
-  return wallet?.signingKey?.publicKey || null
+  const wallet = initWallet();
+  return wallet?.signingKey?.publicKey || null;
 }
 
 /**
@@ -58,7 +70,7 @@ export function getPublicKey() {
  * @returns {boolean}
  */
 export function hasKey() {
-  return !!ENV_KEY && initWallet() !== null
+  return initWallet() !== null;
 }
 
 /**
@@ -66,8 +78,8 @@ export function hasKey() {
  * @returns {string|null}
  */
 export function getKeyAddress() {
-  const wallet = initWallet()
-  return wallet?.address || null
+  const wallet = initWallet();
+  return wallet?.address || null;
 }
 
 /**
@@ -75,12 +87,16 @@ export function getKeyAddress() {
  * @returns {string|null}
  */
 export function getOrPromptKey() {
-  const key = getPrivateKey()
+  const key = getPrivateKey();
   if (!key) {
-    console.error('❌ No encryption key configured. Set VITE_ENCRYPTION_KEY in .env')
-    alert('Encryption key not configured. Please set VITE_ENCRYPTION_KEY in your .env file.')
+    console.error(
+      "❌ No encryption key configured. Set VITE_ENCRYPTION_KEY in .env",
+    );
+    alert(
+      "Encryption key not configured. Please set VITE_ENCRYPTION_KEY in your .env file.",
+    );
   }
-  return key
+  return key;
 }
 
 /**
@@ -88,7 +104,7 @@ export function getOrPromptKey() {
  * @returns {ethers.Wallet|null}
  */
 export function getWallet() {
-  return initWallet()
+  return initWallet();
 }
 
 export default {
@@ -97,5 +113,5 @@ export default {
   hasKey,
   getKeyAddress,
   getOrPromptKey,
-  getWallet
-}
+  getWallet,
+};

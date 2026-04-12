@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="900" viewBox="0 0 900 900">
+  <defs>
+    <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0ea5e9"/>
+      <stop offset="100%" stop-color="#1d4ed8"/>
+    </linearGradient>
+  </defs>
+  <rect width="900" height="900" rx="120" fill="#f8fafc"/>
+  <rect x="90" y="90" width="720" height="720" rx="100" fill="url(#g1)"/>
+  <circle cx="450" cy="360" r="170" fill="#ffffff" opacity="0.15"/>
+  <text x="450" y="410" text-anchor="middle" font-family="Arial, sans-serif" font-size="180" font-weight="700" fill="#ffffff">TC</text>
+  <text x="450" y="560" text-anchor="middle" font-family="Arial, sans-serif" font-size="52" font-weight="700" fill="#ffffff">TEST COMPANY</text>
+  <rect x="180" y="640" width="540" height="56" rx="12" fill="#ffffff" opacity="0.2"/>
+  <text x="450" y="678" text-anchor="middle" font-family="Arial, sans-serif" font-size="28" fill="#ffffff">TEST LOGO - NOT FOR PRODUCTION</text>
+</svg>

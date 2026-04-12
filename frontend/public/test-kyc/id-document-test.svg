@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800">
+  <rect width="1200" height="800" rx="36" fill="#f8fafc"/>
+  <rect x="60" y="60" width="1080" height="680" rx="28" fill="#ffffff" stroke="#cbd5e1" stroke-width="4"/>
+  <rect x="100" y="110" width="340" height="40" rx="10" fill="#1d4ed8"/>
+  <text x="130" y="138" font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="#ffffff">TEST ID DOCUMENT</text>
+  <text x="100" y="210" font-family="Arial, sans-serif" font-size="44" font-weight="700" fill="#0f172a">Sample Government ID</text>
+  <text x="100" y="270" font-family="Arial, sans-serif" font-size="26" fill="#334155">Name: John Doe</text>
+  <text x="100" y="320" font-family="Arial, sans-serif" font-size="26" fill="#334155">DOB: 01 Jan 1990</text>
+  <text x="100" y="370" font-family="Arial, sans-serif" font-size="26" fill="#334155">Document No: TEST-000000</text>
+  <text x="100" y="420" font-family="Arial, sans-serif" font-size="26" fill="#334155">Country: TESTLAND</text>
+  <rect x="820" y="190" width="220" height="280" rx="18" fill="#e2e8f0"/>
+  <circle cx="930" cy="290" r="58" fill="#94a3b8"/>
+  <path d="M860 430c18-54 57-78 70-78s52 24 70 78" fill="#94a3b8"/>
+  <text x="100" y="560" font-family="Arial, sans-serif" font-size="22" fill="#475569">This is a synthetic file for local testing only.</text>
+  <text x="100" y="600" font-family="Arial, sans-serif" font-size="22" fill="#475569">Do not use for real KYC or identity verification.</text>
+  <rect x="100" y="650" width="430" height="34" rx="8" fill="#fef3c7"/>
+  <text x="118" y="674" font-family="Arial, sans-serif" font-size="18" fill="#92400e">TEST - NOT REAL ID</text>
+</svg>

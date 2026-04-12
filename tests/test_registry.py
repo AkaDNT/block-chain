@@ -2,24 +2,29 @@ import pytest
 from ape import accounts, project
 
 
+IPFS_PROSPECTUS = "QmAppleProspectusCID123"
+IPFS_FINANCIALS = "QmAppleFinancialsCID123"
+IPFS_LOGO = "QmAppleLogoCID123"
+
+
 @pytest.fixture
 def deployer():
-    return accounts[0]
+    return accounts.test_accounts[0]
 
 
 @pytest.fixture
 def company_owner():
-    return accounts[1]
+    return accounts.test_accounts[1]
 
 
 @pytest.fixture
 def verifier():
-    return accounts[2]
+    return accounts.test_accounts[2]
 
 
 @pytest.fixture
 def user():
-    return accounts[3]
+    return accounts.test_accounts[3]
 
 
 @pytest.fixture
@@ -42,7 +47,9 @@ class TestRegistry:
         tx = registry.register_company(
             "Apple Inc",
             "AAPL",
-            "QmAppleCID123",
+            IPFS_PROSPECTUS,
+            IPFS_FINANCIALS,
+            IPFS_LOGO,
             sender=company_owner
         )
         
@@ -59,7 +66,9 @@ class TestRegistry:
         assert company.owner == company_owner.address
         assert company.name == "Apple Inc"
         assert company.symbol == "AAPL"
-        assert company.ipfs_cid == "QmAppleCID123"
+        assert company.ipfs_prospectus == IPFS_PROSPECTUS
+        assert company.ipfs_financials == IPFS_FINANCIALS
+        assert company.ipfs_logo == IPFS_LOGO
         assert company.is_verified == False
         assert company.stock_token == "0x0000000000000000000000000000000000000000"
         assert company.amm_pool == "0x0000000000000000000000000000000000000000"
@@ -71,7 +80,9 @@ class TestRegistry:
         assert events[0].owner == company_owner.address
         assert events[0].name == "Apple Inc"
         assert events[0].symbol == "AAPL"
-        assert events[0].ipfs_cid == "QmAppleCID123"
+        assert events[0].ipfs_prospectus == IPFS_PROSPECTUS
+        assert events[0].ipfs_financials == IPFS_FINANCIALS
+        assert events[0].ipfs_logo == IPFS_LOGO
     
     def test_cannot_register_duplicate_symbol(self, registry, company_owner, user):
         """Test that duplicate symbols are not allowed"""
@@ -79,7 +90,9 @@ class TestRegistry:
         registry.register_company(
             "Apple Inc",
             "AAPL",
-            "QmAppleCID123",
+            IPFS_PROSPECTUS,
+            IPFS_FINANCIALS,
+            IPFS_LOGO,
             sender=company_owner
         )
         
@@ -88,7 +101,9 @@ class TestRegistry:
             registry.register_company(
                 "Another Apple",
                 "AAPL",
-                "QmAnotherCID456",
+                "QmAnotherProspectusCID456",
+                "QmAnotherFinancialsCID456",
+                "QmAnotherLogoCID456",
                 sender=user
             )
     
@@ -98,7 +113,9 @@ class TestRegistry:
         registry.register_company(
             "Apple Inc",
             "AAPL",
-            "QmAppleCID123",
+            IPFS_PROSPECTUS,
+            IPFS_FINANCIALS,
+            IPFS_LOGO,
             sender=company_owner
         )
         
@@ -107,7 +124,9 @@ class TestRegistry:
             registry.register_company(
                 "Microsoft Corp",
                 "MSFT",
-                "QmMicrosoftCID456",
+                "QmMicrosoftProspectusCID456",
+                "QmMicrosoftFinancialsCID456",
+                "QmMicrosoftLogoCID456",
                 sender=company_owner
             )
     
@@ -115,15 +134,15 @@ class TestRegistry:
         """Test that empty fields cause registration to fail"""
         # Empty name
         with pytest.raises(Exception):
-            registry.register_company("", "AAPL", "QmCID123", sender=company_owner)
+            registry.register_company("", "AAPL", "QmCID123", "QmCID456", "QmCID789", sender=company_owner)
         
         # Empty symbol
         with pytest.raises(Exception):
-            registry.register_company("Apple Inc", "", "QmCID123", sender=company_owner)
+            registry.register_company("Apple Inc", "", "QmCID123", "QmCID456", "QmCID789", sender=company_owner)
         
         # Empty CID
         with pytest.raises(Exception):
-            registry.register_company("Apple Inc", "AAPL", "", sender=company_owner)
+            registry.register_company("Apple Inc", "AAPL", "", "QmCID456", "QmCID789", sender=company_owner)
     
     def test_set_verified(self, registry, deployer, company_owner, user):
         """Test setting company verification"""
@@ -131,7 +150,9 @@ class TestRegistry:
         registry.register_company(
             "Apple Inc",
             "AAPL",
-            "QmAppleCID123",
+            IPFS_PROSPECTUS,
+            IPFS_FINANCIALS,
+            IPFS_LOGO,
             sender=company_owner
         )
         
@@ -167,7 +188,9 @@ class TestRegistry:
         registry.register_company(
             "Apple Inc",
             "AAPL",
-            "QmAppleCID123",
+            IPFS_PROSPECTUS,
+            IPFS_FINANCIALS,
+            IPFS_LOGO,
             sender=user
         )
         
@@ -195,33 +218,35 @@ class TestRegistry:
             registry.remove_verifier(verifier.address, sender=user)
     
     def test_update_ipfs_cid(self, registry, company_owner, user):
-        """Test updating IPFS CID"""
+        """Test updating IPFS prospectus CID"""
         # Register company
         registry.register_company(
             "Apple Inc",
             "AAPL",
-            "QmAppleCID123",
+            IPFS_PROSPECTUS,
+            IPFS_FINANCIALS,
+            IPFS_LOGO,
             sender=company_owner
         )
         
         # Update CID
-        new_cid = "QmNewAppleCID456"
-        tx = registry.update_ipfs_cid(1, new_cid, sender=company_owner)
+        new_cid = "QmNewAppleProspectusCID456"
+        tx = registry.update_ipfs_prospectus(1, new_cid, sender=company_owner)
         
         # Check updated CID
         company = registry.get_company(1)
-        assert company.ipfs_cid == new_cid
+        assert company.ipfs_prospectus == new_cid
         
         # Check event
         events = tx.decode_logs(registry.IPFSUpdated)
         assert len(events) == 1
         assert events[0].company_id == 1
-        assert events[0].old_cid == "QmAppleCID123"
+        assert events[0].old_cid == IPFS_PROSPECTUS
         assert events[0].new_cid == new_cid
         
         # Non-owner cannot update CID
         with pytest.raises(Exception):
-            registry.update_ipfs_cid(1, "QmHackerCID", sender=user)
+            registry.update_ipfs_prospectus(1, "QmHackerCID", sender=user)
     
     def test_set_stock_token(self, registry, company_owner, user):
         """Test setting stock token address"""
@@ -229,7 +254,9 @@ class TestRegistry:
         registry.register_company(
             "Apple Inc",
             "AAPL",
-            "QmAppleCID123",
+            IPFS_PROSPECTUS,
+            IPFS_FINANCIALS,
+            IPFS_LOGO,
             sender=company_owner
         )
         
@@ -251,7 +278,9 @@ class TestRegistry:
         registry.register_company(
             "Apple Inc",
             "AAPL",
-            "QmAppleCID123",
+            IPFS_PROSPECTUS,
+            IPFS_FINANCIALS,
+            IPFS_LOGO,
             sender=company_owner
         )
         
@@ -273,7 +302,9 @@ class TestRegistry:
         registry.register_company(
             "Apple Inc",
             "AAPL",
-            "QmAppleCID123",
+            IPFS_PROSPECTUS,
+            IPFS_FINANCIALS,
+            IPFS_LOGO,
             sender=company_owner
         )
         
@@ -293,7 +324,9 @@ class TestRegistry:
         registry.register_company(
             "Apple Inc",
             "AAPL",
-            "QmAppleCID123",
+            IPFS_PROSPECTUS,
+            IPFS_FINANCIALS,
+            IPFS_LOGO,
             sender=company_owner
         )
         
@@ -305,7 +338,7 @@ class TestRegistry:
         
         # Non-existent owner should fail
         with pytest.raises(Exception):
-            registry.get_company_by_owner(accounts[9].address)
+            registry.get_company_by_owner(accounts.test_accounts[9].address)
     
     def test_invalid_company_id_fails(self, registry, deployer):
         """Test that invalid company IDs cause failures"""

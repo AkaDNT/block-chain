@@ -4,22 +4,22 @@ from ape import accounts, project
 
 @pytest.fixture
 def deployer():
-    return accounts[0]
+    return accounts.test_accounts[0]
 
 
 @pytest.fixture
 def trader():
-    return accounts[1]
+    return accounts.test_accounts[1]
 
 
 @pytest.fixture
 def verifier():
-    return accounts[2]
+    return accounts.test_accounts[2]
 
 
 @pytest.fixture
 def other_user():
-    return accounts[3]
+    return accounts.test_accounts[3]
 
 
 @pytest.fixture
@@ -81,7 +81,7 @@ class TestSubmitKYC:
         assert kyc.country == sample_kyc_data["country"]
         assert kyc.ipfs_id_document == sample_kyc_data["ipfs_id_document"]
         assert kyc.ipfs_selfie == sample_kyc_data["ipfs_selfie"]
-        assert kyc.status == 0  # PENDING
+        assert kyc.status == 1  # PENDING
         assert kyc.verified_by == "0x0000000000000000000000000000000000000000"
 
         # Check event
@@ -190,7 +190,7 @@ class TestVerifyTrader:
 
         # Check KYC status
         kyc = trader_registry.get_kyc(1)
-        assert kyc.status == 1  # VERIFIED
+        assert kyc.status == 2  # VERIFIED
         assert kyc.verified_by == deployer.address
         assert kyc.verified_at > 0
 
@@ -282,7 +282,7 @@ class TestRejectTrader:
 
         # Check KYC status
         kyc = trader_registry.get_kyc(1)
-        assert kyc.status == 2  # REJECTED
+        assert kyc.status == 4  # REJECTED
         assert kyc.verified_by == deployer.address
         assert kyc.rejection_reason == rejection_reason
 
@@ -373,7 +373,7 @@ class TestRevokeTrader:
 
         # Check status
         kyc = trader_registry.get_kyc(1)
-        assert kyc.status == 3  # REVOKED
+        assert kyc.status == 8  # REVOKED
         assert trader_registry.verified_traders(trader.address) == False
 
         # Check event

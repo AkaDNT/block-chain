@@ -15,9 +15,13 @@ def main():
     print("STOCK TRADING SYSTEM - FULL DEPLOYMENT")
     print("="*70)
 
-    # Get deployer account
-    deployer = accounts.load("deployer")  # You'll need to create this account
-    deployer.set_autosign(True)  # Auto-sign all transactions
+    # Get deployer account. Prefer local alias, fallback to built-in test account.
+    try:
+        deployer = accounts.load("deployer")
+        deployer.set_autosign(True)  # Auto-sign all transactions
+    except KeyError:
+        deployer = accounts.test_accounts[0]
+        print("\nNo Ape account alias 'deployer' found, using accounts.test_accounts[0].")
     print(f"\nDeploying with account: {deployer.address}")
     print(f"Account balance: {deployer.balance / 10**18:.4f} ETH")
 
@@ -158,7 +162,7 @@ def main():
     print("\n" + "="*70)
     print("STEP 11: Registering Sample Company in Registry")
     print("="*70)
-    company_id = registry.register_company(
+    registry.register_company(
         "Apple Inc",
         "AAPL",
         "QmSampleProspectusCID123",  # ipfs_prospectus
@@ -166,12 +170,13 @@ def main():
         "QmSampleLogoCID789",        # ipfs_logo
         sender=deployer
     )
+    company_id = registry.company_count()
 
     # Set token and pool addresses in registry
-    registry.set_stock_token(company_id.return_value, stock_token.address, sender=deployer)
-    registry.set_amm_pool(company_id.return_value, amm.address, sender=deployer)
+    registry.set_stock_token(company_id, stock_token.address, sender=deployer)
+    registry.set_amm_pool(company_id, amm.address, sender=deployer)
 
-    print(f"✅ Company registered with ID: {company_id.return_value}")
+    print(f"✅ Company registered with ID: {company_id}")
     print(f"   Stock token linked to company")
     print(f"   AMM pool linked to company")
 
@@ -197,7 +202,7 @@ def main():
     print("-"*70)
     print(f"StockToken (AAPL):       {stock_token.address}")
     print(f"StockAMM:                {amm.address}")
-    print(f"Company ID:              {company_id.return_value}")
+    print(f"Company ID:              {company_id}")
     print("\n💰 LIQUIDITY INFO")
     print("-"*70)
     print(f"AMM Pool AAPL:           {initial_stock / 10**18:.0f} tokens")
@@ -227,7 +232,7 @@ def main():
             "StockAMM": str(amm.address)
         },
         "sampleDeployment": {
-            "companyId": int(company_id.return_value),
+            "companyId": int(company_id),
             "companyName": "Apple Inc",
             "companySymbol": "AAPL",
             "initialPrice": float(amm.get_price() / 10**18)
