@@ -1,0 +1,27 @@
+name: stock-trading-blockchain
+
+# Project dependencies
+dependencies:
+  - name: OpenZeppelin
+    github: OpenZeppelin/openzeppelin-contracts
+    version: 4.9.0
+
+# Compiler settings
+vyper:
+  version: 0.4.3
+
+# Network configurations
+node:
+  ethereum:
+    local:
+      uri: http://127.0.0.1:8545
+
+networks:
+  ethereum:
+    local:
+      default_provider: node
+
+# Testing configuration
+test:
+  mnemonic: test test test test test test test test test test test junk
+  number_of_accounts: 10

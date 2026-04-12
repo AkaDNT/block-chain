@@ -1,0 +1,268 @@
+{
+  "contractName": "EncryptedDocRegistry",
+  "abi": [
+    {
+      "name": "__init__",
+      "stateMutability": "nonpayable",
+      "type": "constructor",
+      "inputs": [],
+      "outputs": []
+    },
+    {
+      "name": "DocumentUploaded",
+      "type": "event",
+      "inputs": [
+        {"name": "doc_id", "type": "uint256", "indexed": true},
+        {"name": "uploader", "type": "address", "indexed": true},
+        {"name": "cid", "type": "string", "indexed": false},
+        {"name": "doc_type", "type": "string", "indexed": false}
+      ]
+    },
+    {
+      "name": "RecipientAdded",
+      "type": "event",
+      "inputs": [
+        {"name": "doc_id", "type": "uint256", "indexed": true},
+        {"name": "recipient", "type": "address", "indexed": true}
+      ]
+    },
+    {
+      "name": "RecipientRemoved",
+      "type": "event",
+      "inputs": [
+        {"name": "doc_id", "type": "uint256", "indexed": true},
+        {"name": "recipient", "type": "address", "indexed": true}
+      ]
+    },
+    {
+      "name": "DocumentRevoked",
+      "type": "event",
+      "inputs": [
+        {"name": "doc_id", "type": "uint256", "indexed": true},
+        {"name": "revoked_by", "type": "address", "indexed": true}
+      ]
+    },
+    {
+      "name": "upload_document",
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "inputs": [
+        {"name": "_cid", "type": "string"},
+        {"name": "_doc_type", "type": "string"},
+        {"name": "_original_name", "type": "string"},
+        {"name": "_original_size", "type": "uint256"},
+        {"name": "_company_id", "type": "uint256"}
+      ],
+      "outputs": [{"name": "", "type": "uint256"}]
+    },
+    {
+      "name": "add_recipient",
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "inputs": [
+        {"name": "_doc_id", "type": "uint256"},
+        {"name": "_recipient", "type": "address"},
+        {"name": "_ephemeral_public_key", "type": "string"},
+        {"name": "_iv", "type": "string"},
+        {"name": "_ciphertext", "type": "string"},
+        {"name": "_mac", "type": "string"}
+      ],
+      "outputs": []
+    },
+    {
+      "name": "add_recipients_batch",
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "inputs": [
+        {"name": "_doc_id", "type": "uint256"},
+        {"name": "_recipients", "type": "address[]"},
+        {"name": "_ephemeral_public_keys", "type": "string[]"},
+        {"name": "_ivs", "type": "string[]"},
+        {"name": "_ciphertexts", "type": "string[]"},
+        {"name": "_macs", "type": "string[]"}
+      ],
+      "outputs": []
+    },
+    {
+      "name": "remove_recipient",
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "inputs": [
+        {"name": "_doc_id", "type": "uint256"},
+        {"name": "_recipient", "type": "address"}
+      ],
+      "outputs": []
+    },
+    {
+      "name": "revoke_document",
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "inputs": [
+        {"name": "_doc_id", "type": "uint256"}
+      ],
+      "outputs": []
+    },
+    {
+      "name": "get_document",
+      "stateMutability": "view",
+      "type": "function",
+      "inputs": [
+        {"name": "_doc_id", "type": "uint256"}
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "tuple",
+          "components": [
+            {"name": "id", "type": "uint256"},
+            {"name": "uploader", "type": "address"},
+            {"name": "cid", "type": "string"},
+            {"name": "doc_type", "type": "string"},
+            {"name": "original_name", "type": "string"},
+            {"name": "original_size", "type": "uint256"},
+            {"name": "uploaded_at", "type": "uint256"},
+            {"name": "is_revoked", "type": "bool"},
+            {"name": "company_id", "type": "uint256"}
+          ]
+        }
+      ]
+    },
+    {
+      "name": "get_encrypted_key",
+      "stateMutability": "view",
+      "type": "function",
+      "inputs": [
+        {"name": "_doc_id", "type": "uint256"},
+        {"name": "_recipient", "type": "address"}
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "tuple",
+          "components": [
+            {"name": "ephemeral_public_key", "type": "string"},
+            {"name": "iv", "type": "string"},
+            {"name": "ciphertext", "type": "string"},
+            {"name": "mac", "type": "string"}
+          ]
+        }
+      ]
+    },
+    {
+      "name": "can_access",
+      "stateMutability": "view",
+      "type": "function",
+      "inputs": [
+        {"name": "_doc_id", "type": "uint256"},
+        {"name": "_recipient", "type": "address"}
+      ],
+      "outputs": [{"name": "", "type": "bool"}]
+    },
+    {
+      "name": "get_uploader_documents",
+      "stateMutability": "view",
+      "type": "function",
+      "inputs": [
+        {"name": "_uploader", "type": "address"}
+      ],
+      "outputs": [{"name": "", "type": "uint256[]"}]
+    },
+    {
+      "name": "get_accessible_documents",
+      "stateMutability": "view",
+      "type": "function",
+      "inputs": [
+        {"name": "_recipient", "type": "address"}
+      ],
+      "outputs": [{"name": "", "type": "uint256[]"}]
+    },
+    {
+      "name": "transfer_admin",
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "inputs": [
+        {"name": "_new_admin", "type": "address"}
+      ],
+      "outputs": []
+    },
+    {
+      "name": "documents",
+      "stateMutability": "view",
+      "type": "function",
+      "inputs": [{"name": "arg0", "type": "uint256"}],
+      "outputs": [
+        {
+          "name": "",
+          "type": "tuple",
+          "components": [
+            {"name": "id", "type": "uint256"},
+            {"name": "uploader", "type": "address"},
+            {"name": "cid", "type": "string"},
+            {"name": "doc_type", "type": "string"},
+            {"name": "original_name", "type": "string"},
+            {"name": "original_size", "type": "uint256"},
+            {"name": "uploaded_at", "type": "uint256"},
+            {"name": "is_revoked", "type": "bool"},
+            {"name": "company_id", "type": "uint256"}
+          ]
+        }
+      ]
+    },
+    {
+      "name": "document_count",
+      "stateMutability": "view",
+      "type": "function",
+      "inputs": [],
+      "outputs": [{"name": "", "type": "uint256"}]
+    },
+    {
+      "name": "encrypted_keys",
+      "stateMutability": "view",
+      "type": "function",
+      "inputs": [
+        {"name": "arg0", "type": "uint256"},
+        {"name": "arg1", "type": "address"}
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "tuple",
+          "components": [
+            {"name": "ephemeral_public_key", "type": "string"},
+            {"name": "iv", "type": "string"},
+            {"name": "ciphertext", "type": "string"},
+            {"name": "mac", "type": "string"}
+          ]
+        }
+      ]
+    },
+    {
+      "name": "recipient_count",
+      "stateMutability": "view",
+      "type": "function",
+      "inputs": [{"name": "arg0", "type": "uint256"}],
+      "outputs": [{"name": "", "type": "uint256"}]
+    },
+    {
+      "name": "uploader_doc_count",
+      "stateMutability": "view",
+      "type": "function",
+      "inputs": [{"name": "arg0", "type": "address"}],
+      "outputs": [{"name": "", "type": "uint256"}]
+    },
+    {
+      "name": "recipient_accessible_count",
+      "stateMutability": "view",
+      "type": "function",
+      "inputs": [{"name": "arg0", "type": "address"}],
+      "outputs": [{"name": "", "type": "uint256"}]
+    },
+    {
+      "name": "admin",
+      "stateMutability": "view",
+      "type": "function",
+      "inputs": [],
+      "outputs": [{"name": "", "type": "address"}]
+    }
+  ]
+}
