@@ -1,102 +1,89 @@
-# Requirements & Run Guide
+# Yeu cau va cach chay du an
 
-File này ghi toàn bộ những gì cần để chạy project DAO trên máy Windows.
+Tai lieu nay ghi cac thanh phan can co de chay ban demo DAO tren Windows.
 
-## 1. Trạng Thái Đã Chuẩn Bị
+## Moi truong can co
 
-Môi trường trên máy hiện tại đã có:
+- Node.js va npm.
+- Git.
+- MetaMask tren Chrome hoac Edge.
+- Dependency o thu muc goc: chay `npm install`.
+- Dependency frontend: chay `npm --prefix frontend install`.
+- Hardhat local blockchain.
 
-- Node.js: `v24.15.0`
-- npm: `11.12.1`
-- Git: `2.54.0.windows.1`
-- Root dependencies: đã chạy `npm install`
-- Frontend dependencies: đã chạy `npm install` trong thư mục `frontend`
-- Smart contract tests: đã chạy thành công `2 passing`
-- Frontend build: đã build thành công
+Khong dung vi that hoac tien that cho ban demo local. Cac private key Hardhat trong du an chi dung de kiem thu.
 
-## 2. Phần Cần Làm Thủ Công Một Lần
+## Tuy chon IPFS
 
-### Cài MetaMask
+Du an van chay duoc neu chua cai IPFS. Khi khong ket noi duoc IPFS local, frontend tao CID gia de demo luong tao de xuat.
 
-Cài extension MetaMask trên Chrome hoặc Edge:
-
-```text
-https://metamask.io/download/
-```
-
-Không dùng ví thật/mainnet cho project này. Chỉ dùng ví test local của Hardhat.
-
-### IPFS
-
-IPFS là phần tùy chọn.
-
-Project vẫn chạy được nếu chưa cài IPFS, vì frontend sẽ tạo mock CID để demo luồng tạo proposal. Nếu muốn upload/retrieve IPFS thật, cài Kubo/IPFS:
-
-```text
-https://docs.ipfs.tech/install/
-```
-
-Sau khi cài, chạy:
+Neu muon tai va doc tep that qua IPFS local, cai Kubo/IPFS va chay:
 
 ```powershell
 ipfs daemon
 ```
 
-## 3. Cách Chạy Project Mỗi Lần Demo
+Frontend dang thu cac cong IPFS sau:
 
-Mở 2 terminal PowerShell.
+```text
+http://localhost:5001/api/v0/add
+http://localhost:8080/ipfs/<CID>
+http://localhost:8081/ipfs/<CID>
+https://ipfs.io/ipfs/<CID>
+https://gateway.pinata.cloud/ipfs/<CID>
+```
 
-### Terminal 1: Chạy Blockchain Local
+## Cach chay moi lan demo
+
+Mo terminal 1:
 
 ```powershell
 cd G:\App\block-chain
 npm run node
 ```
 
-Để terminal này chạy nguyên, không tắt.
-
-Hardhat sẽ mở RPC tại:
-
-```text
-http://127.0.0.1:8545
-```
-
-### Terminal 2: Deploy Contract
+Mo terminal 2 va deploy contract:
 
 ```powershell
 cd G:\App\block-chain
 npm run deploy:local
 ```
 
-Lệnh này deploy:
-
-- `GovernanceToken`
-- `MembershipNFT`
-- `CommunityDAO`
-
-Và tự tạo file:
-
-```text
-frontend/public/deployment.json
-```
-
-### Terminal 2: Chạy Frontend
-
-Sau khi deploy xong:
+Sau do chay frontend:
 
 ```powershell
 npm run frontend
 ```
 
-Mở trình duyệt:
+Neu muon chay API backend SaaS mau:
+
+```powershell
+npm run backend
+```
+
+Backend mac dinh chay tai:
+
+```text
+http://127.0.0.1:3002
+```
+
+Tai khoan dang nhap demo:
+
+```text
+admin@fundflow.local / demo123    -> Quan tri
+finance@fundflow.local / demo123  -> Ke toan
+member@fundflow.local / demo123   -> Thanh vien
+```
+
+Mo trinh duyet:
 
 ```text
 http://127.0.0.1:3000/
 ```
 
-## 4. Cấu Hình MetaMask
+## Cau hinh MetaMask
 
-Thêm network local:
+Them mang local:
 
 ```text
 Network name: Hardhat Local
@@ -105,109 +92,118 @@ Chain ID: 31337
 Currency symbol: ETH
 ```
 
-Import các ví test sau vào MetaMask.
-
-Account #0, dùng để deploy/admin demo:
+Import cac vi test Hardhat can dung:
 
 ```text
-Address:
-0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
+Account #0
+Address: 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
+Private key: 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
 
-Private key:
-0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
+Account #1
+Address: 0x70997970C51812dc3A010C7d01b50e0d17dc79C8
+Private key: 0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d
+
+Account #2
+Address: 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC
+Private key: 0x5de4111afa1a4b94908f83103eb1f1706367c2e68ca870fc3fb9a804cdab365a
+
+Account #3
+Address: 0x90F79bf6EB2c4f870365E785982E1f101E93b906
+Private key: 0x7c852118294e51e653712a81e05800f419141751be58f605c371e15141b007a6
 ```
 
-Account #1, dùng làm member vote:
+## Dieu kien de tao de xuat trong giao dien moi
+
+Giao dien da them cac kiem tra phu hop cho doanh nghiep nho. De tao de xuat thanh cong, can:
+
+- Vi dang ket noi co the thanh vien NFT.
+- Dia chi nhan tien la dia chi vi day du dang `0x...`.
+- So ETH de nghi chi lon hon 0.
+- So ETH de nghi chi khong vuot qua so du quy hien co.
+- Chon du 3 tep: tai lieu de xuat, bao cao tai chinh, quy che bieu quyet.
+- Xac nhan hop thoai trinh duyet truoc khi gui giao dich.
+- Xac nhan giao dich trong MetaMask.
+
+## Cac trang SaaS va flow cho user non-tech
+
+Frontend hien duoc thiet ke thanh app nhieu trang co flow ro rang:
+
+- `Trung tam dieu hanh`: dashboard, hanh dong tiep theo va workflow 6 buoc.
+- `Thiet lap`: cau hinh to chuc.
+- `De xuat chi quy`: tao ho so, kiem tra dieu kien, gui proposal on-chain, bo phieu va chi quy.
+- `Nguoi nhan`: CRUD nha cung cap, nhan su, doi tac hoac dia chi nhan tien khac.
+- `Ngan sach`: CRUD hang muc chi, han muc ETH, nguoi phu trach, trang thai va mo ta.
+- `Thanh vien`: CRUD user noi bo, vai tro, email, vi va trang thai.
+- `Tai lieu`: CRUD ho so, loai tai lieu va CID/link luu tru.
+- `Bao cao`: tong hop so lieu van hanh.
+- `Cai dat`: cap quyen demo va nap quy.
+- `Quan tri`: audit log va xuat du lieu demo.
+
+Workflow chuan tren giao dien:
 
 ```text
-Address:
-0x70997970C51812dc3A010C7d01b50e0d17dc79C8
-
-Private key:
-0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d
+Thiet lap -> Danh ba -> Ngan sach -> Ho so de xuat -> Bieu quyet -> Chi quy
 ```
 
-Account #2, dùng làm member vote:
+Trang `Thiet lap` co wizard 4 buoc:
 
 ```text
-Address:
-0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC
-
-Private key:
-0x5de4111afa1a4b94908f83103eb1f1706367c2e68ca870fc3fb9a804cdab365a
+Ho so to chuc -> Danh ba nhan tien -> Ke hoach ngan sach -> Quyen van hanh
 ```
 
-Account #3, dùng làm recipient nhận tiền treasury:
+Frontend se uu tien dong bo CRUD voi backend API. Neu backend chua chay, app tu dong fallback sang `localStorage` de demo khong bi dung.
+
+Proposal da gui len blockchain khong co chuc nang sua/xoa truc tiep. Neu can thay doi noi dung sau khi gui, tao proposal moi va bo phieu lai.
+
+## API backend SaaS mau
+
+Backend co cac endpoint:
 
 ```text
-Address:
-0x90F79bf6EB2c4f870365E785982E1f101E93b906
-
-Private key:
-0x7c852118294e51e653712a81e05800f419141751be58f605c371e15141b007a6
+GET    /health
+POST   /api/auth/login
+GET    /api/saas/summary
+GET    /api/saas/:resource
+GET    /api/saas/:resource/:id
+POST   /api/saas/:resource
+PUT    /api/saas/:resource/:id
+DELETE /api/saas/:resource/:id
+POST   /api/saas/reset
 ```
 
-Cảnh báo: Đây là private key công khai của Hardhat, chỉ dùng local. Không gửi tiền thật vào các ví này.
-
-## 5. Demo Theo Rubric
-
-### Bước 1: Connect ví
-
-- Mở `http://127.0.0.1:3000/`
-- Chọn network `Hardhat Local` trong MetaMask
-- Bấm `Connect MetaMask`
-
-### Bước 2: Tạo Proposal
-
-Dùng Account #0 hoặc Account #1 vì các ví này đã được cấp NFT membership khi deploy.
-
-Điền:
-
-- Title: ví dụ `Buy club equipment`
-- Recipient: dùng address Account #3
-- ETH amount: ví dụ `1`
-- Proposal PDF/MD: chọn file bất kỳ `.md`, `.txt`, hoặc `.pdf`
-- Financial report: chọn file bất kỳ `.pdf`, `.csv`, `.json`, hoặc `.txt`
-- Governance rules JSON: chọn file `.json`
-
-Bấm:
+Gia tri `resource` hop le:
 
 ```text
-Upload to IPFS and Propose
+organizations
+recipients
+budgets
+members
+documents
+auditLogs
 ```
 
-### Bước 3: Vote
-
-Dùng MetaMask chuyển qua Account #1 hoặc Account #2.
-
-Trên proposal vừa tạo:
-
-- Bấm `Vote For` để tán thành
-- Hoặc `Vote Against` để phản đối
-
-Trọng số phiếu = số CGT token ví đang nắm giữ.
-
-### Bước 4: Execute
-
-Voting period mặc định là `300 giây`.
-
-Sau khi hết 5 phút, nếu proposal:
-
-- Đạt quorum 20%
-- Phiếu thuận lớn hơn phiếu chống
-- Treasury đủ ETH
-
-Thì bấm:
+Du lieu backend hien duoc luu tai:
 
 ```text
-Execute
+backend/data/saas-db.json
 ```
 
-Contract sẽ tự chuyển ETH từ DAO treasury sang recipient.
+Day la backend demo de ban san pham cho user non-tech. Khi dua len production nen thay bang database that, dang nhap, phan quyen user, audit log bat bien va backup.
 
-## 6. Lệnh Kiểm Tra
+## Luong demo de xuat va bo phieu
 
-Chạy test smart contract:
+1. Bam `Ket noi vi`.
+2. Kiem tra khu `Quyen cua vi hien tai`.
+3. Nhap ten de xuat, tom tat, dia chi nhan tien va so ETH.
+4. Chon du 3 tep bat buoc.
+5. Bam `Tai len IPFS va tao de xuat`.
+6. Doi MetaMask sang vi co CGT de bo phieu.
+7. Bam `Bo phieu thuan` hoac `Bo phieu chong`.
+8. Sau khi het thoi gian bo phieu, neu de xuat dat dieu kien, bam `Thuc thi chi quy`.
+
+## Lenh kiem tra
+
+Kiem tra smart contract:
 
 ```powershell
 cd G:\App\block-chain
@@ -217,126 +213,43 @@ npm test
 Build frontend:
 
 ```powershell
-cd G:\App\block-chain\frontend
+cd G:\App\block-chain
 npm run build
 ```
 
-## 7. Lỗi Hay Gặp
+## Loi thuong gap
 
-### Lỗi `npm.ps1 cannot be loaded`
+### Thieu deployment.json
 
-Không dùng:
-
-```powershell
-npm install
-```
-
-Dùng:
-
-```powershell
-npm install
-```
-
-### MetaMask không connect được
-
-Kiểm tra:
-
-- Hardhat node đang chạy ở terminal 1.
-- MetaMask đang chọn network `Hardhat Local`.
-- RPC URL là `http://127.0.0.1:8545`.
-- Chain ID là `31337`.
-
-### Frontend báo thiếu deployment
-
-Chạy lại:
+Chay lai:
 
 ```powershell
 cd G:\App\block-chain
 npm run deploy:local
 ```
 
-### Lỗi `could not decode result data`, `BAD_DATA`, hoặc `quorumVotes()`
+### MetaMask sai mang
 
-Lỗi này nghĩa là frontend đang gọi địa chỉ contract nhưng trên network MetaMask đang chọn không có contract ở địa chỉ đó.
-
-Cách sửa nhanh:
-
-1. Kiểm tra terminal Hardhat node vẫn đang chạy:
-
-```powershell
-cd G:\App\block-chain
-npm run node
-```
-
-2. Mở terminal khác và deploy lại:
-
-```powershell
-cd G:\App\block-chain
-npm run deploy:local
-```
-
-3. Trong MetaMask chọn đúng network:
+Kiem tra MetaMask dang chon:
 
 ```text
-Network: Hardhat Local
+Hardhat Local
 RPC URL: http://127.0.0.1:8545
 Chain ID: 31337
 ```
 
-Nếu bạn đã có network tên `Hardhat Local` nhưng vẫn lỗi, hãy xóa network đó trong MetaMask rồi tạo lại. Quan trọng là dùng đúng RPC:
+Neu van loi, xoa mang Hardhat Local trong MetaMask, tao lai dung RPC va refresh trang.
 
-```text
-http://127.0.0.1:8545
-```
+### Khong doc duoc CID IPFS
 
-Không dùng nhầm các RPC khác như:
-
-```text
-http://localhost:7545
-http://127.0.0.1:7545
-Sepolia
-Ethereum Mainnet
-```
-
-4. Refresh lại trình duyệt ở:
-
-```text
-http://127.0.0.1:3000/
-```
-
-Nếu vẫn lỗi, vào MetaMask:
-
-```text
-Settings -> Advanced -> Clear activity and nonce data
-```
-
-Rồi refresh trang.
-
-### IPFS không retrieve được file
-
-Nếu chưa chạy IPFS thật, mock CID sẽ không mở được qua gateway. Để retrieve thật:
+Neu dang dung CID gia, tep se khong mo duoc qua gateway cong khai. Muon doc tep that, chay:
 
 ```powershell
 ipfs daemon
 ```
 
-Sau đó tạo proposal mới để file được upload thật.
+Sau do tao de xuat moi de tep duoc tai len IPFS that.
 
-### Lỗi `network does not support ENS`
+### Khong tao duoc de xuat vi vuot quy
 
-Lỗi này thường xuất hiện khi ô địa chỉ ví không đúng định dạng. Hardhat local không hỗ trợ ENS name, nên không nhập tên kiểu:
-
-```text
-alice.eth
-Account #3
-recipient
-private key
-```
-
-Ở ô `Recipient address`, hãy nhập **address**, ví dụ:
-
-```text
-0x90F79bf6EB2c4f870365E785982E1f101E93b906
-```
-
-Không nhập private key. Private key chỉ dùng để import ví vào MetaMask.
+Giao dien moi khong cho tao de xuat co so ETH lon hon so du quy. Hay giam so ETH can chi hoac dung khu `Cap quyen demo` de nap them ETH vao quy.

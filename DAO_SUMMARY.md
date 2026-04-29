@@ -1,594 +1,96 @@
-# DAO Project Summary
+# Tong quan du an DAO
 
-File này giải thích toàn bộ project DAO từ góc nhìn người mới bắt đầu blockchain.
+Du an hien la ban DAO toi gian nhung da du de demo quy cong dong cho nhom, cau lac bo hoac doanh nghiep nho. He thong gom smart contract, giao dien Vue, luong tai tai lieu len IPFS va cac script Hardhat de chay blockchain local.
 
-## 1. Blockchain Là Gì?
+## Thanh phan chinh
 
-Blockchain là một cuốn sổ cái công khai. Mỗi hành động như deploy contract, mint token, tạo proposal, vote, execute hoặc chuyển ETH đều là một giao dịch được ghi lại trên blockchain.
+- `GovernanceToken.sol`: token CGT dung de tinh trong so bieu quyet.
+- `MembershipNFT.sol`: the thanh vien, dung de cap quyen tao de xuat.
+- `CommunityDAO.sol`: giu quy ETH, tao de xuat, nhan phieu, kiem tra ty le toi thieu hop le va thuc thi khoan chi.
+- `frontend/src/App.vue`: giao dien tieng Viet cho nguoi dung tao de xuat, bo phieu, xem tai lieu va quan ly demo.
+- `frontend/src/utils/blockchain.js`: lop ket noi MetaMask/Hardhat va goi smart contract.
+- `frontend/src/utils/ipfs.js`: tai va doc tai lieu IPFS, co CID gia khi chua chay IPFS local.
 
-Trong project này ta dùng **Hardhat local blockchain**, tức blockchain giả lập chạy trên máy cá nhân:
+## Mo hinh van hanh
 
-```text
-http://127.0.0.1:8545
-```
+1. Thanh vien co NFT moi duoc tao de xuat chi quy.
+2. De xuat phai co dia chi nhan tien, so ETH, tom tat va 3 tai lieu: de xuat, bao cao tai chinh, quy che bieu quyet.
+3. Nguoi co CGT duoc bo phieu. Quy tac hien tai: 1 CGT = 1 phieu.
+4. De xuat chi duoc thuc thi sau khi het thoi gian bo phieu, dat ty le toi thieu hop le va phieu thuan lon hon phieu chong.
+5. Khi thuc thi, ETH duoc chuyen tu contract `CommunityDAO` sang dia chi nguoi nhan.
 
-Các account Hardhat như Account #0, #1, #2, #3 đều là ví test có sẵn ETH giả. Không dùng các ví này trên mainnet.
+## Nang cap moi cho chuan doanh nghiep nho
 
-## 2. Smart Contract Là Gì?
+- Giao dien nguoi dung da duoc chuyen sang tieng Viet, bao gom nut, nhan trang thai, canh bao, thong bao loi va huong dan thao tac.
+- Sua cac chuoi tieng Viet bi loi ma hoa tren giao dien DAO.
+- Them khu "Tinh trang quy" de hien so du quy, ty le toi thieu hop le, thoi gian bo phieu va dia chi contract.
+- Them khu "Quyen cua vi hien tai" de nguoi dung biet minh co duoc tao de xuat va bo phieu hay khong.
+- Them bang kiem tra truoc khi tao de xuat: so du sau chi, so tep bat buoc da chon va tinh hop le cua dia chi nhan.
+- Chan tao de xuat neu so ETH de nghi chi lon hon so du quy hien co.
+- Yeu cau so ETH de nghi chi phai lon hon 0.
+- Them xac nhan trinh duyet truoc cac hanh dong quan trong: tao de xuat, bo phieu va thuc thi chi quy.
+- Hien thoi gian con lai hoac thoi diem het han cho tung de xuat.
+- Doi nhan trang thai de xuat sang tieng Viet: Dang bo phieu, Khong dat, Da thong qua, Da thuc thi.
+- Doi cac loi cau hinh blockchain/IPFS co kha nang hien tren giao dien sang tieng Viet.
 
-Smart contract là chương trình chạy trên blockchain. Sau khi deploy, contract có một địa chỉ riêng.
+## Thiet ke SaaS moi cho user non-tech
 
-Project có 3 smart contract chính:
+Frontend da duoc thiet ke lai thanh app nhieu trang, giong mot san pham co the ban cho khach hang. Ban moi bo sung trung tam dieu hanh va workflow nghiep vu ro rang:
 
-```text
-GovernanceToken.sol
-MembershipNFT.sol
-CommunityDAO.sol
-```
+- Trung tam dieu hanh: suc khoe quy, hanh dong tiep theo, workflow 6 buoc va de xuat gan day.
+- Thiet lap: onboarding to chuc, ten don vi, nguoi phu trach, email, linh vuc va mo ta.
+- De xuat chi quy: tao ho so, chon nguoi nhan, chon ngan sach, kiem tra tai lieu, gui proposal on-chain va xu ly dong y/tu choi/chi quy.
+- Nguoi nhan: CRUD nha cung cap, nhan su, doi tac va dia chi nhan tien.
+- Ngan sach: CRUD hang muc chi, han muc ETH, nguoi phu trach, trang thai va mo ta.
+- Thanh vien: CRUD thanh vien, vai tro, email, vi va trang thai.
+- Tai lieu: CRUD ho so tai lieu, loai tai lieu, nguoi phu trach va CID/link luu tru.
+- Bao cao: tong hop so lieu van hanh de nguoi quan ly doc nhanh.
+- Cai dat: cap quyen demo, nap quy va thong tin cau hinh san pham.
+- Quan tri: trang backend/admin, audit log va xuat du lieu demo.
 
-Người dùng tương tác với contract thông qua MetaMask và frontend, thay vì gọi server truyền thống.
-
-## 3. DAO Là Gì?
-
-DAO là viết tắt của:
-
-```text
-Decentralized Autonomous Organization
-```
-
-Hiểu đơn giản: DAO là một tổ chức vận hành bằng luật trong smart contract.
-
-Ví dụ tổ chức truyền thống:
-
-```text
-CLB có quỹ chung.
-Chủ nhiệm hoặc thủ quỹ tự quyết định chi tiền.
-Thành viên phải tin người quản lý.
-```
-
-DAO:
-
-```text
-Quỹ nằm trong smart contract.
-Ai muốn chi tiền phải tạo proposal.
-Thành viên bỏ phiếu.
-Nếu đủ điều kiện, smart contract tự chuyển tiền.
-Không cần admin duyệt thủ công.
-```
-
-## 4. Treasury Là Gì?
-
-Treasury là kho quỹ của DAO.
-
-Trong project này, treasury chính là ETH đang nằm trong contract `CommunityDAO`.
-
-Khi deploy, script nạp vào DAO:
+Workflow chuan:
 
 ```text
-3 ETH
+Thiet lap -> Danh ba -> Ngan sach -> Ho so de xuat -> Bieu quyet -> Chi quy
 ```
 
-Nếu proposal chi 1 ETH được execute:
+Ban moi bo sung:
 
-```text
-DAO treasury: 3 ETH -> 2 ETH
-Recipient: tăng thêm 1 ETH
-```
+- Dang nhap demo theo vai tro: Quan tri, Ke toan, Thanh vien.
+- Wizard thiet lap 4 buoc trong trang `Thiet lap`.
+- Frontend dong bo CRUD voi backend API, neu API chua chay thi fallback ve `localStorage`.
+- Backend co endpoint `POST /api/auth/login` de demo dang nhap.
 
-Lưu ý: tiền không chuyển từ Account #0 sang recipient lúc execute. Tiền chuyển từ **DAO contract** sang recipient.
+Backend da co API SaaS mau tai `backend/server.js`:
 
-## 5. Governance Token Là Gì?
+- `GET /health`
+- `GET /api/saas/summary`
+- `GET /api/saas/:resource`
+- `GET /api/saas/:resource/:id`
+- `POST /api/saas/:resource`
+- `PUT /api/saas/:resource/:id`
+- `DELETE /api/saas/:resource/:id`
+- `POST /api/saas/reset`
 
-Governance token là token dùng để biểu quyết.
+Trong do `resource` gom: `organizations`, `recipients`, `budgets`, `members`, `documents`, `auditLogs`. Du lieu backend hien duoc luu vao file JSON de demo nhanh, co the thay bang PostgreSQL/Supabase/Firebase khi dua thanh san pham that.
 
-Trong project:
+## Pham vi phu hop hien tai
 
-```text
-Token name: Community Governance Token
-Symbol: CGT
-```
+Ban hien tai phu hop cho:
 
-Luật biểu quyết:
+- Demo noi bo ve DAO quan ly quy.
+- Mo phong quy cong dong/doanh nghiep nho voi luong duyet chi minh bach.
+- Bai thuyet trinh ve token bieu quyet, NFT thanh vien, quorum va IPFS.
+- Kiem thu local tren Hardhat voi MetaMask.
 
-```text
-1 CGT = 1 vote
-```
+Ban hien tai chua nen dung cho tien that/mainnet vi con thieu:
 
-Ví dụ:
+- Kiem toan bao mat smart contract.
+- Phan quyen admin san xuat va co che thu hoi quyen.
+- Lich su su kien/indexer rieng de bao cao day du.
+- Co che quan ly tai lieu that, pin IPFS ben vung va sao luu.
+- Kiem thu giao dien tu dong va quy trinh phat hanh.
 
-```text
-Account #1 có 3000 CGT
-Account #2 có 2000 CGT
-```
+## Mot cau tom tat
 
-Nếu cả hai vote for:
-
-```text
-For votes = 5000 CGT
-```
-
-Đây gọi là **weighted voting**, tức phiếu bầu có trọng số theo số token.
-
-## 6. Membership NFT Là Gì?
-
-NFT trong project này là thẻ thành viên.
-
-```text
-MembershipNFT / CDM
-```
-
-Luật:
-
-```text
-Chỉ ví có Membership NFT mới được tạo proposal.
-```
-
-Mục đích:
-
-```text
-Người có token CGT: có quyền vote.
-Người có NFT CDM: là thành viên chính thức, có quyền tạo proposal.
-```
-
-## 7. Quorum Là Gì?
-
-Quorum là ngưỡng tham gia tối thiểu để proposal có hiệu lực.
-
-Nếu không có quorum, một lượng phiếu rất nhỏ cũng có thể quyết định tiền của cả DAO.
-
-Trong project:
-
-```text
-Quorum = 20% tổng cung CGT
-Tổng cung CGT = 10000
-Quorum cần = 2000 CGT
-```
-
-Proposal chỉ hợp lệ nếu:
-
-```text
-For votes + Against votes >= 2000 CGT
-```
-
-## 8. Proposal Là Gì?
-
-Proposal là một đề xuất quản trị.
-
-Ví dụ:
-
-```text
-Chi 1 ETH để mua thiết bị cho câu lạc bộ.
-```
-
-Trong project, proposal gồm:
-
-```text
-title
-summary
-recipient
-amount ETH
-documentation CID
-financial report CID
-governance rules CID
-start time
-end time
-for votes
-against votes
-executed hay chưa
-```
-
-Nếu proposal pass, DAO sẽ chuyển `amount` ETH từ treasury tới `recipient`.
-
-## 9. IPFS Là Gì?
-
-Blockchain lưu dữ liệu rất đắt, nên không nên lưu file PDF hoặc tài liệu dài trực tiếp lên chain.
-
-IPFS là hệ thống lưu file phi tập trung. Khi upload file, ta nhận được một mã gọi là CID.
-
-Smart contract chỉ lưu CID, không lưu cả file.
-
-Project dùng 3 loại dữ liệu IPFS:
-
-```text
-Proposal Documentation
-Financial Reports
-Governance Rules
-```
-
-Flow:
-
-```text
-Upload file lên IPFS
-Nhận CID
-Lưu CID vào proposal trên smart contract
-Người dùng bấm View để đọc lại file từ IPFS
-```
-
-Nếu chưa chạy IPFS thật, frontend tạo mock CID để demo luồng hoạt động.
-
-## 10. Các Contract Trong Project
-
-### GovernanceToken.sol
-
-Vai trò:
-
-```text
-Tạo token CGT.
-Lưu số dư token của từng ví.
-Cho phép mint token demo.
-DAO đọc balanceOf để tính trọng số phiếu.
-```
-
-Hàm quan trọng:
-
-```text
-mint(address to, uint256 amount)
-balanceOf(address account)
-totalSupply()
-transfer(address to, uint256 amount)
-```
-
-### MembershipNFT.sol
-
-Vai trò:
-
-```text
-Tạo NFT thẻ thành viên.
-Lưu ví nào đang sở hữu NFT.
-DAO kiểm tra NFT để cho phép propose.
-```
-
-Hàm quan trọng:
-
-```text
-mint(address to)
-balanceOf(address account)
-ownerOf(uint256 tokenId)
-```
-
-### CommunityDAO.sol
-
-Vai trò:
-
-```text
-Giữ treasury ETH.
-Tạo proposal.
-Nhận vote.
-Kiểm tra quorum và deadline.
-Execute proposal để chuyển ETH.
-```
-
-Hàm quan trọng:
-
-```text
-propose(...)
-vote(uint256 proposalId, bool support)
-execute(uint256 proposalId)
-quorumVotes()
-state(uint256 proposalId)
-getAllProposals()
-```
-
-## 11. Flow Chạy Project Từ Đầu Đến Cuối
-
-### Bước 1: Chạy blockchain local
-
-Chạy:
-
-```powershell
-npm.cmd run node
-```
-
-Hardhat tạo blockchain local và các ví test.
-
-Các ví thường dùng:
-
-```text
-Account #0: deployer/admin demo
-Account #1: member vote
-Account #2: member vote
-Account #3: recipient nhận tiền
-```
-
-### Bước 2: Deploy contract
-
-Chạy:
-
-```powershell
-npm.cmd run deploy:local
-```
-
-Script deploy:
-
-```text
-GovernanceToken
-MembershipNFT
-CommunityDAO
-```
-
-Đồng thời script làm sẵn:
-
-```text
-Mint 10000 CGT cho Account #0
-Transfer 3000 CGT cho Account #1
-Transfer 2000 CGT cho Account #2
-Mint NFT membership cho Account #0, #1, #2
-Nạp 3 ETH vào DAO treasury
-```
-
-Sau deploy:
-
-```text
-Account #0: có CGT, có NFT
-Account #1: có 3000 CGT, có NFT
-Account #2: có 2000 CGT, có NFT
-Account #3: là người nhận tiền demo
-DAO treasury: có 3 ETH
-```
-
-### Bước 3: Chạy frontend
-
-Chạy:
-
-```powershell
-npm.cmd run frontend
-```
-
-Mở:
-
-```text
-http://127.0.0.1:3000/
-```
-
-Frontend đọc `frontend/public/deployment.json` để biết địa chỉ contract.
-
-### Bước 4: Connect MetaMask
-
-MetaMask cần chọn đúng network:
-
-```text
-Network name: Hardhat Local
-RPC URL: http://127.0.0.1:8545
-Chain ID: 31337
-Currency symbol: ETH
-```
-
-Sau đó import các account Hardhat để demo.
-
-### Bước 5: Tạo proposal
-
-Dùng Account #0, #1 hoặc #2 vì các account này có NFT membership.
-
-Ví dụ nhập:
-
-```text
-Title: Buy club equipment
-Recipient: 0x90F79bf6EB2c4f870365E785982E1f101E93b906
-Amount: 1 ETH
-```
-
-Chọn đủ 3 file:
-
-```text
-Proposal Documentation
-Financial Report
-Governance Rules JSON
-```
-
-Khi bấm propose:
-
-```text
-File được upload lên IPFS hoặc mock IPFS
-Frontend nhận CID
-CID được gửi vào smart contract
-Proposal được tạo trên blockchain
-```
-
-Proposal lúc này có trạng thái:
-
-```text
-Active
-```
-
-### Bước 6: Vote
-
-Chuyển MetaMask sang Account #1.
-
-Account #1 có:
-
-```text
-3000 CGT
-```
-
-Bấm:
-
-```text
-Vote For
-```
-
-Contract ghi:
-
-```text
-For votes += 3000
-```
-
-Chuyển sang Account #2.
-
-Account #2 có:
-
-```text
-2000 CGT
-```
-
-Bấm:
-
-```text
-Vote For
-```
-
-Contract ghi:
-
-```text
-For votes += 2000
-```
-
-Tổng:
-
-```text
-For votes = 5000
-Against votes = 0
-Total votes = 5000
-```
-
-Quorum cần:
-
-```text
-2000
-```
-
-Vậy proposal đủ quorum và đa số thuận.
-
-### Bước 7: Chờ hết voting period
-
-Voting period mặc định:
-
-```text
-300 giây = 5 phút
-```
-
-Trong thời gian này:
-
-```text
-Vẫn có thể vote.
-Không được execute sớm.
-```
-
-Sau khi hết hạn:
-
-```text
-Không được vote nữa.
-Có thể execute nếu proposal pass.
-```
-
-### Bước 8: Execute
-
-Dùng account nào cũng có thể execute:
-
-```text
-Account #0
-Account #1
-Account #2
-Account #3
-```
-
-Contract kiểm tra:
-
-```text
-Đã hết thời gian chưa?
-Proposal đã execute chưa?
-Tổng vote có đạt quorum không?
-For votes có lớn hơn Against votes không?
-DAO treasury có đủ ETH không?
-```
-
-Nếu tất cả đúng:
-
-```text
-DAO chuyển ETH cho recipient
-proposal.executed = true
-```
-
-Ví dụ proposal chi 1 ETH cho Account #3:
-
-```text
-DAO treasury: 3 ETH -> 2 ETH
-Account #3: 10000 ETH -> 10001 ETH
-```
-
-## 12. Trạng Thái Proposal
-
-Các trạng thái chính:
-
-```text
-Active
-Defeated
-Succeeded
-Executed
-```
-
-Ý nghĩa:
-
-```text
-Active: đang trong thời gian vote
-Defeated: hết hạn nhưng không đạt quorum hoặc phiếu thuận không thắng
-Succeeded: hết hạn, đạt quorum, phiếu thuận thắng
-Executed: proposal đã thực thi và tiền đã chuyển
-```
-
-## 13. Ai Được Làm Gì?
-
-```text
-Account #0
-- Deploy project
-- Có CGT
-- Có NFT
-- Có thể propose, vote, execute
-
-Account #1
-- Có 3000 CGT
-- Có NFT
-- Có thể propose, vote, execute
-
-Account #2
-- Có 2000 CGT
-- Có NFT
-- Có thể propose, vote, execute
-
-Account #3
-- Người nhận tiền demo
-- Không cần CGT
-- Không cần NFT
-- Vẫn có thể execute nếu muốn, vì execute không bị giới hạn
-```
-
-## 14. Principal-Agent Problem
-
-Trong tổ chức truyền thống, người sở hữu quỹ phải tin người quản lý sẽ hành động đúng lợi ích chung.
-
-Vấn đề:
-
-```text
-Người quản lý có thể chi tiêu sai mục đích.
-Thành viên không kiểm soát được quyết định.
-Thông tin có thể thiếu minh bạch.
-```
-
-Đây là **Principal-Agent Problem**.
-
-DAO giải quyết bằng cách:
-
-```text
-Mọi proposal công khai trên blockchain.
-Tài liệu proposal lưu bằng CID IPFS.
-Token holders trực tiếp vote.
-Smart contract tự kiểm tra điều kiện.
-Treasury chỉ chuyển tiền khi proposal pass.
-Không cần phụ thuộc vào một admin tập quyền.
-```
-
-Kết luận:
-
-```text
-DAO thay niềm tin vào cá nhân bằng luật minh bạch trong smart contract.
-```
-
-## 15. Một Câu Tóm Tắt Project
-
-Project này là một quỹ cộng đồng tự vận hành:
-
-```text
-Thành viên có NFT được tạo đề xuất.
-Người có token CGT được bỏ phiếu.
-Proposal phải đạt quorum và đa số thuận.
-Sau deadline, smart contract tự chuyển ETH từ DAO treasury cho người nhận.
-```
+Du an la mot DAO quan ly quy bang smart contract: thanh vien tao de xuat, nguoi co CGT bo phieu, tai lieu duoc gan CID IPFS, va quy chi tien tu dong khi de xuat dat dieu kien.

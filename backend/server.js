@@ -1,7 +1,6 @@
-import express from "express";
 import cors from "cors";
-import { ethers } from "ethers";
 import dotenv from "dotenv";
+import express from "express";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -12,267 +11,196 @@ const __dirname = path.dirname(__filename);
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3002;
+const DATA_DIR = path.join(__dirname, "data");
+const DB_FILE = path.join(DATA_DIR, "saas-db.json");
 
-// Middleware
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: "5mb" }));
 
-function getWallet(provider) {
-  const rawPrivateKey = (process.env.DEPLOYER_PRIVATE_KEY || "").trim();
-  const normalizedPrivateKey = rawPrivateKey.startsWith("0x")
-    ? rawPrivateKey
-    : `0x${rawPrivateKey}`;
+const defaultDb = {
+  organizations: [
+    {
+      id: "org-demo",
+      name: "Quỹ cộng đồng mẫu",
+      owner: "Ban điều hành",
+      email: "hello@example.com",
+      industry: "Doanh nghiệp nhỏ",
+      description: "Tổ chức mẫu để demo FundFlow DAO."
+    }
+  ],
+  recipients: [
+    {
+      id: "recipient-demo",
+      name: "Đội vận hành",
+      wallet: "0x90F79bf6EB2c4f870365E785982E1f101E93b906",
+      type: "Nhà cung cấp",
+      note: "Ví nhận tiền demo",
+      status: "Đang hoạt động"
+    }
+  ],
+  budgets: [
+    {
+      id: "budget-demo",
+      name: "Mua thiết bị văn phòng",
+      limitEth: "1",
+      owner: "Ban tài chính",
+      status: "Mở",
+      description: "Hạng mục mẫu để tạo đề xuất nhanh."
+    }
+  ],
+  members: [
+    {
+      id: "member-demo",
+      name: "Nguyễn Minh",
+      email: "minh@example.com",
+      wallet: "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+      role: "Quản trị",
+      status: "Đang hoạt động"
+    }
+  ],
+  documents: [
+    {
+      id: "document-demo",
+      name: "Quy chế biểu quyết mẫu",
+      type: "Quy chế",
+      owner: "Ban điều hành",
+      cid: ""
+    }
+  ],
+  auditLogs: [],
+  users: [
+    { id: "user-admin", name: "Quản trị viên", email: "admin@fundflow.local", role: "Quản trị", password: "demo123" },
+    { id: "user-finance", name: "Kế toán", email: "finance@fundflow.local", role: "Kế toán", password: "demo123" },
+    { id: "user-member", name: "Thành viên", email: "member@fundflow.local", role: "Thành viên", password: "demo123" }
+  ]
+};
 
-  if (/^0x[0-9a-fA-F]{64}$/.test(normalizedPrivateKey)) {
-    return new ethers.Wallet(normalizedPrivateKey, provider);
-  }
+const resources = ["organizations", "recipients", "budgets", "members", "documents", "auditLogs", "users"];
 
-  const mnemonic =
-    process.env.TEST_MNEMONIC ||
-    "test test test test test test test test test test test junk";
-  console.warn(
-    "DEPLOYER_PRIVATE_KEY is missing or invalid, falling back to test mnemonic account #0",
-  );
-  return ethers.Wallet.fromPhrase(mnemonic).connect(provider);
+function ensureDb() {
+  if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+  if (!fs.existsSync(DB_FILE)) fs.writeFileSync(DB_FILE, JSON.stringify(defaultDb, null, 2));
 }
 
-// Setup provider and wallet
-const provider = new ethers.JsonRpcProvider(process.env.RPC_URL);
-const wallet = getWallet(provider);
-
-console.log("🔗 Connected to:", process.env.RPC_URL);
-console.log("👤 Deployer address:", wallet.address);
-
-// Load contract artifacts
-function loadContract(name) {
-  const contractPath = path.join(__dirname, "contracts", `${name}.json`);
-  const contractData = JSON.parse(fs.readFileSync(contractPath, "utf8"));
-  return contractData;
+function readDb() {
+  ensureDb();
+  return JSON.parse(fs.readFileSync(DB_FILE, "utf8"));
 }
 
-const StockTokenArtifact = loadContract("StockToken");
-const StockAMMArtifact = loadContract("StockAMM");
-const RegistryArtifact = loadContract("Registry");
-
-// Get Registry contract instance
-function getRegistry() {
-  return new ethers.Contract(
-    process.env.REGISTRY_ADDRESS,
-    RegistryArtifact.abi,
-    wallet,
-  );
+function writeDb(db) {
+  fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2));
 }
 
-// Health check
+function addAudit(db, action, resource, id) {
+  db.auditLogs = [
+    { id: `audit-${Date.now()}`, action, resource, recordId: id, time: new Date().toISOString() },
+    ...(db.auditLogs || [])
+  ].slice(0, 200);
+}
+
+function publicRecord(resource, record) {
+  if (resource !== "users") return record;
+  const { password, ...safeUser } = record;
+  return safeUser;
+}
+
 app.get("/health", (req, res) => {
+  res.json({ status: "ok", app: "FundFlow DAO SaaS API", storage: DB_FILE });
+});
+
+app.post("/api/auth/login", (req, res) => {
+  const { email, password } = req.body;
+  const db = readDb();
+  const user = (db.users || []).find((item) => item.email === email && item.password === password);
+  if (!user) return res.status(401).json({ error: "Email hoặc mật khẩu không đúng." });
+  const safeUser = publicRecord("users", user);
   res.json({
-    status: "ok",
-    deployer: wallet.address,
-    network: process.env.RPC_URL,
+    user: safeUser,
+    token: `demo-token-${safeUser.id}`,
+    permissions: {
+      canManageSettings: safeUser.role === "Quản trị",
+      canManageFinance: ["Quản trị", "Kế toán"].includes(safeUser.role),
+      canVote: ["Quản trị", "Kế toán", "Thành viên"].includes(safeUser.role)
+    }
   });
 });
 
-// Deploy StockToken
-app.post("/api/deploy/token", async (req, res) => {
-  try {
-    const { companyId, name, symbol, totalSupply } = req.body;
-
-    if (!companyId || !name || !symbol || !totalSupply) {
-      return res.status(400).json({
-        error: "Missing required fields: companyId, name, symbol, totalSupply",
-      });
-    }
-
-    console.log(`📝 Deploying StockToken for ${name} (${symbol})...`);
-
-    // Create contract factory
-    const StockTokenFactory = new ethers.ContractFactory(
-      StockTokenArtifact.abi,
-      StockTokenArtifact.bytecode,
-      wallet,
-    );
-
-    // Deploy contract
-    // StockToken constructor: _name, _symbol, _decimals, _total_supply, _company_name, _ipfs_cid
-    const stockToken = await StockTokenFactory.deploy(
-      symbol, // _name (token name, use symbol)
-      symbol, // _symbol
-      18, // _decimals
-      totalSupply, // _total_supply
-      name, // _company_name
-      "QmDefault", // _ipfs_cid (placeholder)
-    );
-
-    await stockToken.waitForDeployment();
-    const tokenAddress = await stockToken.getAddress();
-
-    console.log(`✅ StockToken deployed at: ${tokenAddress}`);
-
-    // Update registry (admin can do this)
-    console.log("📝 Updating registry...");
-    const registry = getRegistry();
-    const tx = await registry.set_stock_token(companyId, tokenAddress);
-    await tx.wait();
-
-    console.log("✅ Registry updated!");
-
-    res.json({
-      success: true,
-      tokenAddress,
-      transactionHash: tx.hash,
-    });
-  } catch (error) {
-    console.error("❌ Error deploying token:", error);
-    res.status(500).json({
-      error: error.message,
-      details: error.reason || error.data?.message,
-    });
-  }
+app.get("/api/saas/summary", (req, res) => {
+  const db = readDb();
+  res.json({
+    organizations: db.organizations.length,
+    recipients: db.recipients.length,
+    budgets: db.budgets.length,
+    members: db.members.length,
+    documents: db.documents.length,
+    auditLogs: db.auditLogs.length
+  });
 });
 
-// Deploy StockAMM
-app.post("/api/deploy/amm", async (req, res) => {
-  try {
-    const { companyId } = req.body;
-
-    if (!companyId) {
-      return res.status(400).json({ error: "Missing companyId" });
-    }
-
-    console.log(`📝 Deploying StockAMM for company #${companyId}...`);
-
-    // Create contract factory
-    const StockAMMFactory = new ethers.ContractFactory(
-      StockAMMArtifact.abi,
-      StockAMMArtifact.bytecode,
-      wallet,
-    );
-
-    // Deploy contract
-    // StockAMM constructor: _fee_rate (in basis points, e.g., 30 = 0.3%)
-    const feeRate = 30; // 0.3% fee
-    const amm = await StockAMMFactory.deploy(feeRate);
-    await amm.waitForDeployment();
-    const ammAddress = await amm.getAddress();
-
-    console.log(`✅ StockAMM deployed at: ${ammAddress}`);
-
-    // Update registry (admin can do this)
-    console.log("📝 Updating registry...");
-    const registry = getRegistry();
-    const tx = await registry.set_amm_pool(companyId, ammAddress);
-    await tx.wait();
-
-    console.log("✅ Registry updated!");
-
-    res.json({
-      success: true,
-      ammAddress,
-      transactionHash: tx.hash,
-    });
-  } catch (error) {
-    console.error("❌ Error deploying AMM:", error);
-    res.status(500).json({
-      error: error.message,
-      details: error.reason || error.data?.message,
-    });
-  }
+app.post("/api/saas/reset", (req, res) => {
+  writeDb(defaultDb);
+  res.json({ ok: true });
 });
 
-// Initialize AMM Pool
-app.post("/api/initialize/pool", async (req, res) => {
-  try {
-    const {
-      ammAddress,
-      stockTokenAddress,
-      baseTokenAddress,
-      initialStock,
-      initialBase,
-    } = req.body;
-
-    if (
-      !ammAddress ||
-      !stockTokenAddress ||
-      !baseTokenAddress ||
-      !initialStock ||
-      !initialBase
-    ) {
-      return res.status(400).json({
-        error: "Missing required fields",
-      });
-    }
-
-    console.log(`📝 Initializing pool at ${ammAddress}...`);
-
-    // Get contract instances
-    const amm = new ethers.Contract(ammAddress, StockAMMArtifact.abi, wallet);
-    const stockToken = new ethers.Contract(
-      stockTokenAddress,
-      StockTokenArtifact.abi,
-      wallet,
-    );
-    const baseToken = new ethers.Contract(
-      baseTokenAddress,
-      StockTokenArtifact.abi,
-      wallet,
-    );
-
-    // Approve tokens
-    console.log("📝 Approving tokens...");
-    let tx = await stockToken.approve(ammAddress, initialStock);
-    await tx.wait();
-
-    tx = await baseToken.approve(ammAddress, initialBase);
-    await tx.wait();
-
-    // Initialize pool
-    console.log("📝 Initializing pool...");
-    tx = await amm.init_pool(
-      stockTokenAddress,
-      baseTokenAddress,
-      initialStock,
-      initialBase,
-    );
-    await tx.wait();
-
-    console.log("✅ Pool initialized!");
-
-    // Get price
-    const price = await amm.get_price();
-    const priceFormatted = ethers.formatEther(price);
-
-    res.json({
-      success: true,
-      transactionHash: tx.hash,
-      price: priceFormatted,
-    });
-  } catch (error) {
-    console.error("❌ Error initializing pool:", error);
-    res.status(500).json({
-      error: error.message,
-      details: error.reason || error.data?.message,
-    });
-  }
+app.get("/api/saas/:resource", (req, res) => {
+  const { resource } = req.params;
+  if (!resources.includes(resource)) return res.status(404).json({ error: "Nhóm dữ liệu không tồn tại." });
+  const db = readDb();
+  res.json((db[resource] || []).map((record) => publicRecord(resource, record)));
 });
 
-// Get deployer balance
-app.get("/api/deployer/balance", async (req, res) => {
-  try {
-    const balance = await provider.getBalance(wallet.address);
-    res.json({
-      address: wallet.address,
-      balance: ethers.formatEther(balance),
-      balanceWei: balance.toString(),
-    });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
+app.get("/api/saas/:resource/:id", (req, res) => {
+  const { resource, id } = req.params;
+  if (!resources.includes(resource)) return res.status(404).json({ error: "Nhóm dữ liệu không tồn tại." });
+  const db = readDb();
+  const record = (db[resource] || []).find((item) => item.id === id);
+  if (!record) return res.status(404).json({ error: "Không tìm thấy bản ghi." });
+  res.json(publicRecord(resource, record));
 });
 
-// Start server
+app.post("/api/saas/:resource", (req, res) => {
+  const { resource } = req.params;
+  if (!resources.includes(resource) || ["auditLogs"].includes(resource)) return res.status(400).json({ error: "Không thể tạo bản ghi cho nhóm này." });
+  const db = readDb();
+  const record = {
+    id: req.body.id || `${resource}-${Date.now()}`,
+    ...req.body,
+    createdAt: req.body.createdAt || new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  };
+  db[resource] = [record, ...(db[resource] || [])];
+  addAudit(db, "Tạo mới", resource, record.id);
+  writeDb(db);
+  res.status(201).json(publicRecord(resource, record));
+});
+
+app.put("/api/saas/:resource/:id", (req, res) => {
+  const { resource, id } = req.params;
+  if (!resources.includes(resource) || ["auditLogs"].includes(resource)) return res.status(400).json({ error: "Không thể cập nhật nhóm này." });
+  const db = readDb();
+  const records = db[resource] || [];
+  const index = records.findIndex((item) => item.id === id);
+  if (index === -1) return res.status(404).json({ error: "Không tìm thấy bản ghi." });
+  records[index] = { ...records[index], ...req.body, id, updatedAt: new Date().toISOString() };
+  addAudit(db, "Cập nhật", resource, id);
+  writeDb(db);
+  res.json(publicRecord(resource, records[index]));
+});
+
+app.delete("/api/saas/:resource/:id", (req, res) => {
+  const { resource, id } = req.params;
+  if (!resources.includes(resource) || ["auditLogs"].includes(resource)) return res.status(400).json({ error: "Không thể xóa nhóm này." });
+  const db = readDb();
+  const before = (db[resource] || []).length;
+  db[resource] = (db[resource] || []).filter((item) => item.id !== id);
+  if (db[resource].length === before) return res.status(404).json({ error: "Không tìm thấy bản ghi." });
+  addAudit(db, "Xóa", resource, id);
+  writeDb(db);
+  res.status(204).send();
+});
+
 app.listen(PORT, () => {
-  console.log(`🚀 Backend server running on http://localhost:${PORT}`);
-  console.log(`📋 Registry: ${process.env.REGISTRY_ADDRESS}`);
-  console.log(`💵 Base Token: ${process.env.BASE_TOKEN_ADDRESS}`);
+  ensureDb();
+  console.log(`FundFlow DAO SaaS API đang chạy tại http://localhost:${PORT}`);
 });

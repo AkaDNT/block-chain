@@ -43,7 +43,7 @@ const NFT_ABI = [
   "function owner() view returns (address)"
 ];
 
-const STATES = ["Unknown", "Active", "Defeated", "Succeeded", "Executed"];
+const STATES = ["Không xác định", "Đang bỏ phiếu", "Không đạt", "Đã thông qua", "Đã thực thi"];
 
 let deploymentCache = null;
 
@@ -51,7 +51,7 @@ async function loadDeployment() {
   if (deploymentCache) return deploymentCache;
   const response = await fetch("/deployment.json", { cache: "no-store" });
   if (!response.ok) {
-    throw new Error("Missing frontend/public/deployment.json. Run npm run deploy:hardhat or npm run deploy:local first.");
+    throw new Error("Thiếu frontend/public/deployment.json. Hãy chạy npm run deploy:hardhat hoặc npm run deploy:local trước.");
   }
   deploymentCache = await response.json();
   return deploymentCache;
@@ -90,7 +90,7 @@ function normalizeProposal(proposal, state = 0, account = null, voted = false) {
     totalVotes,
     executed: proposal.executed,
     state,
-    stateLabel: STATES[state] || "Unknown",
+    stateLabel: STATES[state] || "Không xác định",
     hasVoted: Boolean(voted),
     canExecute: state === 3,
     isOwnProposal: account ? proposal.proposer.toLowerCase() === account.toLowerCase() : false
@@ -145,7 +145,7 @@ class BlockchainService {
 
   getAddress(name) {
     if (!this.deployment?.contracts?.[name]) {
-      throw new Error(`${name} address is not configured in deployment.json`);
+      throw new Error(`Chưa cấu hình địa chỉ ${name} trong deployment.json`);
     }
     return this.deployment.contracts[name];
   }
@@ -172,7 +172,7 @@ class BlockchainService {
 
     if (connectedChainId !== expectedChainId) {
       throw new Error(
-        `Wrong network selected in MetaMask. Connected chainId is ${connectedChainId}, expected ${expectedChainId}. Select Hardhat Local with RPC http://127.0.0.1:8545, then refresh.`
+        `MetaMask đang chọn sai mạng. Chain ID hiện tại là ${connectedChainId}, cần ${expectedChainId}. Hãy chọn mạng Hardhat Local với RPC http://127.0.0.1:8545 rồi tải lại trang.`
       );
     }
 
@@ -182,7 +182,7 @@ class BlockchainService {
       const code = await this.provider.getCode(address);
       if (!code || code === "0x") {
         throw new Error(
-          `${name} is not deployed at ${address} on the selected MetaMask network chainId ${connectedChainId}. Your local RPC http://127.0.0.1:8545 may be correct, but MetaMask is likely pointing to another RPC. Delete and recreate the Hardhat Local network with RPC http://127.0.0.1:8545, chainId 31337, then refresh.`
+          `${name} chưa được triển khai tại ${address} trên mạng MetaMask đang chọn, chain ID ${connectedChainId}. Có thể node local đúng nhưng MetaMask đang trỏ nhầm RPC. Hãy tạo lại mạng Hardhat Local với RPC http://127.0.0.1:8545, chain ID 31337 rồi tải lại trang.`
         );
       }
     }
@@ -255,7 +255,7 @@ class BlockchainService {
 
   async propose(payload) {
     if (!ethers.isAddress(payload.recipient)) {
-      throw new Error("Invalid recipient address. Use a full 0x wallet address, not an ENS name or private key.");
+      throw new Error("Địa chỉ nhận tiền không hợp lệ. Hãy dùng địa chỉ ví đầy đủ dạng 0x, không dùng tên ENS hoặc private key.");
     }
 
     const dao = this.getDao();
@@ -285,7 +285,7 @@ class BlockchainService {
 
   async mintTokens(to, amount) {
     if (!ethers.isAddress(to)) {
-      throw new Error("Invalid token recipient address.");
+      throw new Error("Địa chỉ nhận token không hợp lệ.");
     }
     const token = this.getToken();
     const tx = await token.mint(to.trim(), ethers.parseUnits(amount, 18));
@@ -294,7 +294,7 @@ class BlockchainService {
 
   async mintMembership(to) {
     if (!ethers.isAddress(to)) {
-      throw new Error("Invalid membership recipient address.");
+      throw new Error("Địa chỉ nhận thẻ thành viên không hợp lệ.");
     }
     const nft = this.getMembership();
     const tx = await nft.mint(to.trim());
