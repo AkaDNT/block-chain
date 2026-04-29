@@ -49,6 +49,8 @@ frontend/lerna-debug.log*
 geth-data/
 geth.log
 deployment.json
+artifacts/
+cache/
 *.keystore
 accounts.json
 

@@ -1,7 +1,7 @@
 {
-  "name": "stock-trading-frontend",
+  "name": "community-dao-frontend",
   "version": "1.0.0",
-  "description": "Frontend for blockchain stock trading system",
+  "description": "Vue frontend for DAO governance, token voting, NFT membership, and IPFS proposal storage",
   "main": "index.js",
   "scripts": {
     "dev": "vite",

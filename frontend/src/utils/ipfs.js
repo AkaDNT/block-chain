@@ -126,6 +126,43 @@ export async function uploadToIPFS(file) {
   }
 }
 
+export async function uploadJsonToIPFS(data, fileName = "governance-rules.json") {
+  const blob = new Blob([JSON.stringify(data, null, 2)], {
+    type: "application/json",
+  });
+  const file = new File([blob], fileName, { type: "application/json" });
+  return uploadToIPFS(file);
+}
+
+export async function retrieveFromIPFS(cid) {
+  const gateways = [
+    `http://localhost:8080/ipfs/${cid}`,
+    `http://localhost:8081/ipfs/${cid}`,
+    `https://ipfs.io/ipfs/${cid}`,
+    `https://gateway.pinata.cloud/ipfs/${cid}`,
+  ];
+
+  for (const gateway of gateways) {
+    try {
+      const response = await fetch(gateway);
+      if (!response.ok) continue;
+
+      const contentType = response.headers.get("content-type") || "";
+      if (contentType.includes("application/json")) {
+        return { url: gateway, type: "json", content: await response.json() };
+      }
+      if (contentType.includes("text") || contentType.includes("markdown")) {
+        return { url: gateway, type: "text", content: await response.text() };
+      }
+      return { url: gateway, type: "file", content: null };
+    } catch (error) {
+      continue;
+    }
+  }
+
+  throw new Error(`Cannot retrieve CID ${cid} from configured gateways`);
+}
+
 /**
  * Verify if a CID is accessible
  * @param {string} cid - The IPFS CID to verify
@@ -178,6 +215,8 @@ export function getIPFSUrl(cid, gateway = "ipfs.io") {
 
 export default {
   uploadToIPFS,
+  uploadJsonToIPFS,
+  retrieveFromIPFS,
   verifyCID,
   getIPFSUrl,
 };
